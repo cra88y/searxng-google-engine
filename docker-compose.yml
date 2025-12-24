@@ -1,44 +1,49 @@
-version: '3.8'
-
 services:
-  # 4get Sidecar Service (PHP)
-  4get-sidecar:
-    build:
-      context: ./sidecar
-      dockerfile: Dockerfile
-    container_name: 4get-sidecar
-    ports:
-      - "8080:80"
-    volumes:
-      - ./sidecar/src:/var/www/html
-      - ./4get-repo:/var/www/html/4get-repo
-    environment:
-      - APACHE_DOCUMENT_ROOT=/var/www/html
-    restart: unless-stopped
-    networks:
-      - searxng-network
-
-  # SearXNG Application (Python)
   searxng:
-    build:
-      context: ./searxng-repo
-      dockerfile: Dockerfile
-    container_name: searxng
-    ports:
-      - "8081:8080"
-    volumes:
-      - ./searxng-custom:/usr/local/searxng/searx/engines/custom
-      - ./searxng-repo/searxng:/etc/searxng
-    environment:
-      - SEARXNG_HOST=0.0.0.0
-      - SEARXNG_PORT=8080
-      - SEARXNG_BASE_URL=http://localhost:8081/
+    image: 'docker.io/searxng/searxng:latest'
+    restart: always
     depends_on:
-      - 4get-sidecar
-    restart: unless-stopped
+      - valkey
+      - 4get-hijacked
+    environment:
+      - SERVICE_FQDN_SEARXNG_8080
+      - 'INSTANCE_NAME=${INSTANCE_NAME}'
+      - 'SEARXNG_BASE_URL=${SERVICE_FQDN_SEARXNG}'
+      - 'SEARXNG_SECRET=${SERVICE_PASSWORD_SEARXNGSECRET}'
+      - 'SEARXNG_REDIS_URL=redis://valkey:6379/0'
+      - 'SEARXNG_VALKEY_URL=redis://valkey:6379/0'
+    volumes:
+      - './settings.yml:/etc/searxng/settings.yml'
+      - './limiter.toml:/etc/searxng/limiter.toml'
+      - '/root/proj/4get-hijacked/crab-engine/google-crab.py:/usr/local/searxng/searx/engines/google-crab.py'
+      - '/root/proj/4get-hijacked/searxng-custom/engines/fourget_bridge.py:/usr/local/searxng/searx/engines/fourget_bridge.py:ro'
+      - '/root/proj/4get-hijacked/searxng-custom/engines/google-4get.py:/usr/local/searxng/searx/engines/google-4get.py:ro'
+      - '/root/proj/4get-hijacked/searxng-custom/engines/brave-4get.py:/usr/local/searxng/searx/engines/brave-4get.py:ro'
+      - '/root/proj/searxng-custom-theme/crabx:/usr/local/searxng/searx/templates/simple'
+      - '/root/proj/searxng-custom-theme/crabx-static/css:/usr/local/searxng/searx/static/themes/simple/css'
     networks:
-      - searxng-network
-
+      - searxng-net
+  valkey:
+    container_name: valkey
+    image: 'docker.io/valkey/valkey:8-alpine'
+    command: 'valkey-server --save 60 1 --loglevel warning'
+    restart: always
+    volumes:
+      - 'valkey-data:/data'
+    networks:
+      - searxng-net
+  4get-hijacked:
+    build: /root/proj/4get-hijacked/sidecar
+    container_name: 4get-hijacked
+    ports:
+      - '8081:80'
+    restart: always
+    volumes:
+      - '/root/proj/4get-hijacked/sidecar/src:/var/www/html'
+    networks:
+      - searxng-net
 networks:
-  searxng-network:
+  searxng-net:
     driver: bridge
+volumes:
+  valkey-data: null
