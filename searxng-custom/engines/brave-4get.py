@@ -1,8 +1,11 @@
-from searxng.fourget_hijacker_client import FourgetHijackerClient
+from ..fourget_hijacker_client import FourgetHijackerClient
 
 categories = ['general', 'web']
 paging = True
 weight = 100
+safesearch = True
+time_range_support = True
+language_support = True
 
 # Explicit definitions for SearXNG's static analysis
 def request(query, params):

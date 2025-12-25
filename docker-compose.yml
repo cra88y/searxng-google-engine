@@ -16,7 +16,6 @@ services:
       - './settings.yml:/etc/searxng/settings.yml'
       - './limiter.toml:/etc/searxng/limiter.toml'
       - '/root/proj/4get-hijacked/crab-engine/google-crab.py:/usr/local/searxng/searx/engines/google-crab.py'
-      - '/root/proj/4get-hijacked/searxng-custom/engines/fourget_bridge.py:/usr/local/searxng/searx/engines/fourget_bridge.py:ro'
       - '/root/proj/4get-hijacked/searxng-custom/engines/google-4get.py:/usr/local/searxng/searx/engines/google-4get.py:ro'
       - '/root/proj/4get-hijacked/searxng-custom/engines/brave-4get.py:/usr/local/searxng/searx/engines/brave-4get.py:ro'
       - '/root/proj/4get-hijacked/searxng-custom/fourget_hijacker_client.py:/usr/local/searxng/searx/fourget_hijacker_client.py:ro'
