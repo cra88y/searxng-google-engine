@@ -1,7 +1,7 @@
 services:
   searxng:
     image: 'docker.io/searxng/searxng:latest'
-    restart: always
+    restart: unless-stopped
     depends_on:
       - valkey
       - 4get-hijacked
@@ -29,7 +29,7 @@ services:
     container_name: valkey
     image: 'docker.io/valkey/valkey:alpine'
     command: 'valkey-server --save 60 1 --loglevel warning'
-    restart: always
+    restart: unless-stopped
     volumes:
       - 'valkey-data:/data'
     networks:
@@ -39,7 +39,7 @@ services:
     container_name: 4get-hijacked
     ports:
       - '8081:80'
-    restart: always
+    restart: unless-stopped
     volumes:
       - '/root/proj/4get-hijacked/sidecar/src:/var/www/html'
     networks:

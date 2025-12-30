@@ -1,23 +1,20 @@
-from fourget_hijacker_client import FourgetHijackerClient
-
-categories = ['general']
-paging = True
-
-def request(query, params):
-    client = FourgetHijackerClient()
-    fourget_params = {
-        's': query,
-        'country': params.get('searxng_locale', 'US').split('-')[-1].lower(),
-        'lang': params.get('searxng_locale', 'en').split('-')[0],
-    }
-    # Perform the hijack call to the sidecar
-    params['results'] = client.fetch('google', fourget_params)
-    
-    # Dummy URL to satisfy SearXNG core
-    params['url'] = 'http://localhost/proxied-to-4get'
-    return params
-
-def response(params):
-    response_data = params.get('results')
-    client = FourgetHijackerClient()
-    return client.normalize_results(response_data)
+from fourget_hijacker_client import FourgetHijackerClient  
+  
+categories = ['general']  
+paging = True  
+  
+def request(query, params):  
+    params['url'] = 'http://4get-hijacked:80/harness.php'  
+    params['method'] = 'POST'  
+    params['json'] = {  
+        "engine": "google",   
+        "params": {"s": query}  
+    }  
+    return params  
+  
+def response(resp):  
+    try:  
+        response_data = resp.json()  
+        return FourgetHijackerClient.normalize_results(response_data)  
+    except Exception as e:  
+        return []

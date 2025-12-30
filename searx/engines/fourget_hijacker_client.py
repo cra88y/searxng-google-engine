@@ -1,38 +1,56 @@
-import requests
-from typing import Dict, Any
-
-class FourgetHijackerClient:
-    def __init__(self, base_url: str = "http://4get-hijacked:80"):
-        self.base_url = base_url
-
-    def fetch(self, engine: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        url = f"{self.base_url}/harness.php"
-        payload = {
-            "engine": engine,
-            "params": params
-        }
-        try:
-            # SearXNG threads are synchronous; use requests.
-            response = requests.post(url, json=payload, timeout=15)
-            if response.status_code == 200:
-                return response.json()
-            return {"status": "error", "message": f"HTTP {response.status_code}"}
-        except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-    @staticmethod
-    def normalize_results(response_data: Any):
-        results = []
-        # If response_data is a list (direct results) or a dict with a list
-        data = response_data.get("web") if isinstance(response_data, dict) else response_data
-        
-        if not isinstance(data, list):
-            return results
-
-        for item in data:
-            results.append({
-                "url": item.get("url"),
-                "title": item.get("title"),
-                "content": item.get("description") or item.get("snippet") or "",
-            })
+import requests  
+from typing import Dict, Any  
+import logging  
+  
+logger = logging.getLogger(__name__)  
+  
+class FourgetHijackerClient:  
+    def __init__(self, base_url: str = "http://4get-hijacked:80"):  
+        self.base_url = base_url  
+  
+    def fetch(self, engine: str, params: Dict[str, Any]) -> Dict[str, Any]:  
+        url = f"{self.base_url}/harness.php"  
+        payload = {  
+            "engine": engine,  
+            "params": params  
+        }  
+        try:  
+            response = requests.post(url, json=payload, timeout=15)  
+            if response.status_code == 200:  
+                return response.json()  
+            logger.error(f"HTTP {response.status_code} from sidecar")  
+            return {"status": "error", "message": f"HTTP {response.status_code}"}  
+        except Exception as e:  
+            logger.error(f"Sidecar request failed: {e}")  
+            return {"status": "error", "message": str(e)}  
+  
+    @staticmethod  
+    def normalize_results(response_data: Any):  
+        results = []  
+        data = response_data.get("web") if isinstance(response_data, dict) else response_data  
+          
+        if not isinstance(data, list):  
+            return results  
+  
+        for item in data:  
+            result = {  
+                "url": item.get("url"),  
+                "title": item.get("title"),  
+                "content": item.get("description") or item.get("snippet") or "",  
+            }  
+              
+            # Add thumbnail if available  
+            if item.get("thumbnail") and item["thumbnail"].get("original"):  
+                result["thumbnail"] = item["thumbnail"]["original"]  
+              
+            # Add date if available  
+            if item.get("age"):  
+                try:  
+                    from datetime import datetime  
+                    import time  
+                    result["publishedDate"] = datetime.fromtimestamp(time.mktime(time.strptime(item["age"], "%Y-%m-%d")))  
+                except:  
+                    pass  
+                      
+            results.append(result)  
         return results
