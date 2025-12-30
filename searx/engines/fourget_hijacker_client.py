@@ -1,63 +1,38 @@
-import json
-import aiohttp
-from typing import Dict, Any, Optional
+import requests
+from typing import Dict, Any
 
 class FourgetHijackerClient:
-    
     def __init__(self, base_url: str = "http://4get-hijacked:80"):
         self.base_url = base_url
-        self.session = None
-    
-    async def get_session(self) -> aiohttp.ClientSession:
-        if self.session is None or self.session.closed:
-            self.session = aiohttp.ClientSession()
-        return self.session
-    
-    async def get_manifest(self) -> Dict[str, Any]:
-        url = f"{self.base_url}/harness.php?action=discover"
-        session = await self.get_session()
-        
-        try:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    return await response.json()
-                else:
-                    return {}
-        except Exception as e:
-            print(f"Error fetching manifest: {e}")
-            return {}
-    
-    async def fetch(self, engine: str, params: Dict[str, Any]) -> Dict[str, Any]:
+
+    def fetch(self, engine: str, params: Dict[str, Any]) -> Dict[str, Any]:
         url = f"{self.base_url}/harness.php"
         payload = {
             "engine": engine,
             "params": params
         }
-        
-        session = await self.get_session()
-        
         try:
-            async with session.post(url, json=payload) as response:
-                if response.status == 200:
-                    return await response.json()
-                else:
-                    return {"status": "error", "message": f"HTTP {response.status}"}
+            # SearXNG threads are synchronous; use requests.
+            response = requests.post(url, json=payload, timeout=15)
+            if response.status_code == 200:
+                return response.json()
+            return {"status": "error", "message": f"HTTP {response.status_code}"}
         except Exception as e:
-            print(f"Error fetching results: {e}")
             return {"status": "error", "message": str(e)}
-    
+
     @staticmethod
-    def normalize_results(response_data: Dict[str, Any], engine_name: str) -> Dict[str, Any]:
+    def normalize_results(response_data: Any):
         results = []
+        # If response_data is a list (direct results) or a dict with a list
+        data = response_data.get("web") if isinstance(response_data, dict) else response_data
         
-        if response_data.get("status") != "ok":
+        if not isinstance(data, list):
             return results
-        
-        for item in response_data.get("web", []):
+
+        for item in data:
             results.append({
                 "url": item.get("url"),
                 "title": item.get("title"),
-                "content": item.get("description") or item.get("snippet"),
+                "content": item.get("description") or item.get("snippet") or "",
             })
-        
         return results

@@ -1,34 +1,8 @@
 from fourget_hijacker_client import FourgetHijackerClient
-
-categories = ['general', 'web']
-paging = True
-weight = 100
-safesearch = True
-time_range_support = True
-language_support = True
-
-# Explicit definitions for SearXNG's static analysis
+categories = ['general']; paging = True
 def request(query, params):
-    client = FourgetHijackerClient()
-    
-    # Map SearXNG params to 4get params
-    fourget_params = {
-        's': query,
-        'country': params.get('searxng_locale', 'US').split('-')[-1].lower(),
-        'lang': params.get('searxng_locale', 'en').split('-')[0],
-        'nsfw': 'yes' if params.get('safesearch') == 0 else 'no'
-    }
-    
-    # Call the client to do the work
-    response_data = client.fetch('yandex', fourget_params)
-    params['results'] = response_data
+    params['results'] = FourgetHijackerClient().fetch('yandex', {'s': query})
+    params['url'] = 'http://localhost/yandex'
     return params
-
 def response(params):
-    response_data = params.get('results')
-    if not response_data:
-        return []
-    
-    # Use the shared normalizer
-    client = FourgetHijackerClient()
-    return client.normalize_results(response_data, 'yandex')
+    return FourgetHijackerClient.normalize_results(params.get('results'))
