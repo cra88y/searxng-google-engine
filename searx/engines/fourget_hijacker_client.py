@@ -114,16 +114,36 @@ class FourgetHijackerClient:
             return False
 
     @staticmethod
-    def _is_broken_image_url(url: str) -> bool:
-        """Check if a specific URL string looks like a broken image placeholder"""
-        if not url or not isinstance(url, str):
-            return True
-        
-        broken_patterns = [
-            "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP",
-            "placeholder", "empty", "broken", "404", "1x1", "0x0", "transparent.gif"
-        ]
-        return any(pattern in url.lower() for pattern in broken_patterns)
+        def _is_broken_image_url(url: str) -> bool:
+            """Check if a specific URL string looks like a broken image placeholder"""
+            if not url or not isinstance(url, str):
+                return True
+            
+            url_lower = url.lower()
+
+            # 1. Exact Technical Signatures (Safe to block)
+            technical_patterns = [
+                "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP", # Standard 1x1 transparent pixel
+                "transparent.gif",
+                "1x1.gif",
+                "1x1.png",
+                "0x0"
+            ]
+            if any(p in url_lower for p in technical_patterns):
+                return True
+
+            # 2. Contextual Placeholders (Be specific to avoid false positives)
+            # Instead of just "broken", look for "broken_image" or specific paths
+            placeholder_patterns = [
+                "broken_image",       # Common internal asset name
+                "image_not_found",
+                "no_image",
+                "placeholder.png",    # Specific filename
+                "placeholder.jpg",
+                "placeholder.svg"
+            ]
+            
+            return any(p in url_lower for p in placeholder_patterns)
 
     @staticmethod
     def _parse_date(date_val: Any) -> Optional[datetime]:
