@@ -30,5 +30,17 @@
   "wiby": {
     "file": "scraper/wiby.php",
     "class": "wiby"
+  },
+  "curlie": {
+    "file": "scraper/curlie.php",
+    "class": "curlie"
+  },
+  "baidu": {
+    "file": "scraper/baidu.php",
+    "class": "baidu"
+  },
+  "crowdview": {
+    "file": "scraper/crowdview.php",
+    "class": "crowdview"
   }
 }
