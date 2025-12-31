@@ -1,7 +1,7 @@
-.agents/
-.kilocode/
-4get-repo/
-searxng-repo/
+# .agents/
+# .kilocode/
+# 4get-repo/
+# searxng-repo/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -20,6 +20,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+!sidecar/src/dummy_lib/lib/
+!sidecar/src/dummy_lib/lib/*.php
 lib64/
 parts/
 sdist/
