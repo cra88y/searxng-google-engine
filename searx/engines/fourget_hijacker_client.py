@@ -51,13 +51,23 @@ class FourgetHijackerClient:
             }
             
             # Add thumbnail if available
-            if item.get("thumbnail") and item["thumbnail"].get("original"):
+            # 4get returns "thumb": {"url": "..."}
+            if item.get("thumb") and item["thumb"].get("url"):
+                result["thumbnail"] = item["thumb"]["url"]
+            elif item.get("thumbnail") and item["thumbnail"].get("original"):
+                 # Fallback for previous schema if any
                 result["thumbnail"] = item["thumbnail"]["original"]
             
             # Add date if available
-            if item.get("age"):
+            # 4get returns "date": 123456789 (int timestamp)
+            if item.get("date"):
                 try:
-                    # Cleaned up imports to be at top of file or inside try block
+                    result["publishedDate"] = datetime.fromtimestamp(int(item["date"]))
+                except Exception:
+                    pass
+            elif item.get("age"):
+                # Fallback for "age": "YYYY-MM-DD" schema
+                try:
                     result["publishedDate"] = datetime.fromtimestamp(time.mktime(time.strptime(item["age"], "%Y-%m-%d")))
                 except:
                     pass
