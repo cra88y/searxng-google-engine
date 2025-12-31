@@ -29,10 +29,11 @@ $params = array_merge([
     's' => '', 'country' => 'us', 'nsfw' => 'yes', 'lang' => 'en'
 ], $input['params'] ?? []);
 
-try {
-    // 4get engines use the 'web' method for standard searches
-    $result = $instance->web($params);  
-    error_log("Hijacker result: " . print_r($result, true)); 
-} catch (Throwable $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+try {  
+    // 4get engines use the 'web' method for standard searches  
+    $result = $instance->web($params);    
+    error_log("Hijacker result: " . print_r($result, true));   
+    echo json_encode($result); 
+} catch (Throwable $e) {  
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);  
 }
