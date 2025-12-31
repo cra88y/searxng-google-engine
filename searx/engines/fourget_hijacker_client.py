@@ -127,13 +127,21 @@ class FourgetHijackerClient:
         if not thumb:
             return False
         
+        url = ""
         if isinstance(thumb, dict):
-            url = thumb.get("url", "")
+            # Fix: Handle case where url key exists but value is None
+            url = thumb.get("url")
         elif isinstance(thumb, str):
             url = thumb
         else:
+            # Unknown type, assume broken
             return True
             
+        # Fix: If url is None or not a string, it's not a "broken pattern", just missing.
+        # We return False to keep the result (it will just have no thumbnail).
+        if not isinstance(url, str):
+            return False
+
         broken_patterns = [
             "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP",
             "placeholder",
@@ -221,18 +229,20 @@ class FourgetHijackerClient:
         return results
 
     @staticmethod
-    def _normalize_answer_result(item):  
-        result = {"answer": ""}  
-        if item.get("description"):  
-            description_parts = []  
-            for part in item["description"]:  
-                if part.get("type") in ["text", "quote", "title"]:  
-                    # Preserve formatting for quotes and titles  
-                    if part.get("type") == "quote":  
-                        description_parts.append(f'"{part.get("value", "")}"')  
-                    else:  
-                        description_parts.append(part.get("value", ""))  
-            result["answer"] = " ".join(description_parts)  
+    def _normalize_answer_result(item):
+        """Normalize answer boxes to SearXNG format"""
+        result = {
+            "answer": ""
+        }
+        if item.get("description"):
+            description_parts = []
+            for part in item["description"]:
+                if part.get("type") == "text":
+                    # Fix: Ensure value is a string
+                    val = part.get("value")
+                    if val:
+                        description_parts.append(str(val))
+            result["answer"] = " ".join(description_parts)
         return result
 
     @staticmethod
