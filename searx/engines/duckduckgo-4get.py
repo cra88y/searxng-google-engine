@@ -1,5 +1,6 @@
 from fourget_hijacker_client import FourgetHijackerClient  
-  
+import logging  
+logger = logging.getLogger(__name__)
 categories = ['general']  
 paging = True  
   

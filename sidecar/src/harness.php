@@ -31,7 +31,8 @@ $params = array_merge([
 
 try {
     // 4get engines use the 'web' method for standard searches
-    echo json_encode($instance->web($params));
+    $result = $instance->web($params);  
+    error_log("Hijacker result: " . print_r($result, true)); 
 } catch (Throwable $e) {
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
