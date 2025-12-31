@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install dom xml mbstring curl \
     && pecl install apcu \
     && docker-php-ext-enable apcu \
-    # Enable APCu for CLI scripts (critical for the backend logic)
+    # Enable APCu for CLI and increase memory for token storage
     && echo "apc.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini \
+    && echo "apc.shm_size=128M" >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
@@ -22,8 +23,8 @@ RUN wget -O- https://github.com/lwthiker/curl-impersonate/releases/download/v0.6
     | tar -xz -C /usr/local/bin
 
 # 3. Symlink to the name 4get looks for internally
-# This allows 4get to find the stealth binary naturally
-RUN ln -s /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl_chrome116
+# We use -sf (force) to overwrite if the tarball already created them
+RUN ln -sf /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl_chrome116
 
 WORKDIR /var/www/html
 
