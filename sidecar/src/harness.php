@@ -63,7 +63,24 @@ $params = array_merge([
     'npt' => null,
     'older' => false,
     'newer' => false,
-    'spellcheck' => 'yes'
+    'spellcheck' => 'yes',
+    // Mojeek / General
+    'focus' => 'any',
+    'region' => 'any',
+    'domain' => '1',
+    // Wiby / DDG
+    'date' => 'any',
+    'extendedsearch' => 'no',
+    // Marginalia
+    'intitle' => 'no',
+    'format' => 'any',
+    'file' => 'any',
+    'javascript' => 'any',
+    'trackers' => 'any',
+    'cookies' => 'any',
+    'affiliate' => 'any',
+    'adtech' => 'no',
+    'recent' => 'no'
 ], $input['params'] ?? []);
 
 try {
