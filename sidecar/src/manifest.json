@@ -1,6 +1,34 @@
 {
-  "google": { "file": "scraper/google.php", "class": "google" },
-  "duckduckgo": { "file": "scraper/ddg.php", "class": "ddg" },
-  "brave": { "file": "scraper/brave.php", "class": "brave" },
-  "yandex": { "file": "scraper/yandex.php", "class": "yandex" }
+  "google": {
+    "file": "scraper/google.php",
+    "class": "google"
+  },
+  "duckduckgo": {
+    "file": "scraper/ddg.php",
+    "class": "ddg"
+  },
+  "brave": {
+    "file": "scraper/brave.php",
+    "class": "brave"
+  },
+  "yandex": {
+    "file": "scraper/yandex.php",
+    "class": "yandex"
+  },
+  "mojeek": {
+    "file": "scraper/mojeek.php",
+    "class": "mojeek"
+  },
+  "yep": {
+    "file": "scraper/yep.php",
+    "class": "yep"
+  },
+  "marginalia": {
+    "file": "scraper/marginalia.php",
+    "class": "marginalia"
+  },
+  "wiby": {
+    "file": "scraper/wiby.php",
+    "class": "wiby"
+  }
 }

@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     && pecl install apcu \
     && docker-php-ext-enable apcu \
     && a2enmod rewrite \
+    && apt-get install -y tini \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
@@ -23,5 +24,6 @@ COPY src/ /var/www/html/
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["entrypoint.sh"]
+# Use tini to manage the process headers
+ENTRYPOINT ["/usr/bin/tini", "--", "entrypoint.sh"]
 CMD ["apache2-foreground"]
