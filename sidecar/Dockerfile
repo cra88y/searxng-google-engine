@@ -18,13 +18,13 @@ RUN apt-get update && apt-get install -y \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Install curl-impersonate
+# 2. Install curl-impersonate (extract to /usr/local so lib/ and bin/ are populated)
 RUN wget -O- https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/curl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz \
-    | tar -xz -C /usr/local/bin
+    | tar -xz -C /usr/local
 
-# 3. Symlink to the name 4get looks for internally
-# We use -sf (force) to overwrite if the tarball already created them
-RUN ln -sf /usr/local/bin/curl-impersonate-chrome /usr/local/bin/curl_chrome116
+# 3. Set environment variables for PHP to use curl-impersonate
+ENV LD_PRELOAD=/usr/local/lib/libcurl-impersonate-chrome.so
+ENV CURL_IMPERSONATE=chrome116
 
 WORKDIR /var/www/html
 

@@ -25,11 +25,16 @@ try {
     $page = $input['page'] ?? 'web';
     
     $manifestPath = __DIR__ . '/manifest.json';
-    if (!file_exists($manifestPath)) {
-        throw new Exception('Manifest not found');
+    
+    // Cache manifest in APCu forever (cleared on container restart)
+    $manifest = apcu_fetch('hijacker_manifest');
+    if ($manifest === false) {
+        if (!file_exists($manifestPath)) {
+            throw new Exception('Manifest not found');
+        }
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+        apcu_store('hijacker_manifest', $manifest, 0);
     }
-
-    $manifest = json_decode(file_get_contents($manifestPath), true);
 
     if (!isset($manifest[$engine])) {
         throw new Exception("Engine '$engine' not found in manifest");

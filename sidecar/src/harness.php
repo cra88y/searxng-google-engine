@@ -25,7 +25,13 @@ if (!$input) {
 }
 
 $engine = preg_replace('/[^a-z0-9_]/', '', $input['engine'] ?? '');
-$manifest = json_decode(file_get_contents(__DIR__ . '/manifest.json'), true);
+
+// Cache manifest in APCu forever (cleared on container restart)
+$manifest = apcu_fetch('hijacker_manifest');
+if ($manifest === false) {
+    $manifest = json_decode(file_get_contents(__DIR__ . '/manifest.json'), true);
+    apcu_store('hijacker_manifest', $manifest, 0);
+}
 
 if (!isset($manifest[$engine])) {
     ob_end_clean();
@@ -55,7 +61,7 @@ if (!class_exists($className)) {
 
 $instance = new $className();
 
-$params = array_merge([
+$defaults = [
     's' => '', 
     'country' => 'us', 
     'nsfw' => 'yes', 
@@ -79,19 +85,26 @@ $params = array_merge([
     'trackers' => 'any',
     'cookies' => 'any',
     'affiliate' => 'any',
-    'adtech' => 'no',
+    'adtech' => 'yes',
     'recent' => 'no'
-], $input['params'] ?? []);
+];
+
+// Optimization: Use + operator for array union (faster than array_merge for keyed arrays)
+// Input params (left) overwrite defaults (right), but + only adds missing keys.
+// So we must reverse it: $input + $defaults would mean input keeps its keys.
+// Wait, + operator: "$a + $b Union of $a and $b. The keys from the left-hand array will be preserved..."
+// So ($input['params'] ?? []) + $defaults Is correct. User input keys are preserved.
+$input_params = $input['params'] ?? [];
+$params = $input_params + $defaults;
 
 try {
     // 4get engines use the 'web' method for standard searches
     $result = $instance->web($params);
 
-    // Debug logging
+    // Debug logging (only count, skip expensive json_encode)
     $webCount = isset($result['web']) ? count($result['web']) : 0;
-    error_log("Hijacker: Scraper '{$engine}' returned {$webCount} web results.");
     if ($webCount === 0) {
-        error_log("Hijacker: WARNING - Empty results from {$engine}. Response dump: " . json_encode($result));
+        error_log("Hijacker: Scraper '{$engine}' returned 0 results.");
     }
 
     // Clear the buffer (discard warnings) and send JSON

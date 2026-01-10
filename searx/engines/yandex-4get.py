@@ -9,31 +9,16 @@ engine_type = "online"
 time_range_support = True  
   
 def request(query, params):  
-    client = FourgetHijackerClient()  
-    filters = client.get_engine_filters('yandex')  
-      
-    # Get standard parameter mappings  
-    fourget_params = FourgetHijackerClient.get_4get_params(query, params, filters)  
-      
-    # Apply engine-specific custom parameters from settings.yml  
-    if 'yandex_language' in params:  
-        fourget_params['lang'] = params['yandex_language']  
+    fourget_params = FourgetHijackerClient.get_4get_params(query, params, engine_name='yandex')  
       
     params['url'] = 'http://4get-hijacked:80/harness.php'  
     params['method'] = 'POST'  
-    params['json'] = {  
-        'engine': 'yandex',  
-        'params': fourget_params  
-    }  
+    params['json'] = {'engine': 'yandex', 'params': fourget_params}  
     return params  
   
 def response(resp):  
     try:  
-        response_data = resp.json()  
-        logger.debug(f'4get yandex response data: {response_data}')  
-        results = FourgetHijackerClient.normalize_results(response_data)  
-        logger.debug(f'yandex-4get results: {len(results)}')  
-        return results  
+        return FourgetHijackerClient.normalize_results(resp.json())  
     except Exception as e:  
         logger.error(f'4get yandex response error: {e}')  
         return []

@@ -7,23 +7,16 @@ categories = ['general']
 paging = True
 
 def request(query, params):
-    client = FourgetHijackerClient()
-    filters = client.get_engine_filters('yep')
+    fourget_params = FourgetHijackerClient.get_4get_params(query, params, engine_name='yep')
+
     params['url'] = 'http://4get-hijacked:80/harness.php'
     params['method'] = 'POST'
-    params['json'] = {
-        'engine': 'yep',
-        'params': FourgetHijackerClient.get_4get_params(query, params, filters)
-    }
+    params['json'] = {'engine': 'yep', 'params': fourget_params}
     return params
 
 def response(resp):
     try:
-        response_data = resp.json()
-        logger.debug(f'4get yep response data: {response_data}')
-        results = FourgetHijackerClient.normalize_results(response_data)
-        logger.debug(f'yep-4get results: {len(results)}')
-        return results
+        return FourgetHijackerClient.normalize_results(resp.json())
     except Exception as e:
         logger.error(f'4get yep response error: {e}')
         return []
