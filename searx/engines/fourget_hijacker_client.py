@@ -135,10 +135,24 @@ class FourgetHijackerClient:
     # --- Validation Helpers ---
 
     @staticmethod
+    def _sanitize_url(url: Any) -> Optional[str]:
+        """Sanitize and heal URL: type check, strip, and fix double-encoding."""
+        if not isinstance(url, str):
+            return None
+        
+        s_url = url.strip()
+        if not s_url:
+            return None
+
+        if '&' in s_url:
+             s_url = unescape(s_url)
+
+        return s_url
+
+    @staticmethod
     def _is_valid_url(url: Any) -> bool:
         if not url or not isinstance(url, str):
             return False
-        # Reduced length check (min "ftp:/" is 5) and expanded protocols
         if len(url) >= 5 and url.startswith(("http://", "https://", "magnet:", "ftp://", "ipfs://", "ipns://", "git://")):
              return True
         return False
@@ -563,8 +577,8 @@ class FourgetHijackerClient:
         if not isinstance(img_data, dict) or not isinstance(thumb_data, dict):
             return None
 
-        img_url = img_data.get("url")
-        thumb_url = thumb_data.get("url")
+        img_url = FourgetHijackerClient._sanitize_url(img_data.get("url"))
+        thumb_url = FourgetHijackerClient._sanitize_url(thumb_data.get("url"))
 
         if not FourgetHijackerClient._is_valid_url(img_url):
             return None
@@ -572,11 +586,9 @@ class FourgetHijackerClient:
         # Sanity check
         if '\x00' in img_url: return None
 
-        # Heal raw URL before proxy extraction
-        img_url = FourgetHijackerClient._sanitize_url(img_url)
-        thumb_url = FourgetHijackerClient._sanitize_url(thumb_url)
-
         if not img_url: return None
+
+        # Extract from proxy FIRST, then validate
 
         # Extract from proxy FIRST, then validate
         img_url = FourgetHijackerClient._extract_proxied_url(img_url)
