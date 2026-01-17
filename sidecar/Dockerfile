@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# 1. Install dependencies (libnss3 required for Firefox curl-impersonate)
+# 1. Install dependencies (libnss3 + nss-plugin-pem required for Firefox curl-impersonate)
 RUN apt-get update && apt-get install -y \
     git \
     wget \
@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libcurl4-openssl-dev \
     libnss3 \
+    nss-plugin-pem \
     tini \
     && docker-php-ext-install dom xml mbstring curl \
     && pecl install apcu \
