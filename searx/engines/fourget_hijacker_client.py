@@ -247,6 +247,8 @@ class FourgetHijackerClient:
                 raise SearxEngineCaptchaException(suspended_time=300, message=msg)
             if 'too many requests' in msg_l or '429' in msg:
                 raise SearxEngineTooManyRequestsException(suspended_time=60, message=msg)
+            if 'blocked' in msg_l or 'forbidden' in msg_l or '403' in msg:
+                raise SearxEngineTooManyRequestsException(suspended_time=300, message=msg)
             
             raise SearxEngineResponseException(f"4get upstream error: {msg}")
 
