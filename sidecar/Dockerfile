@@ -28,9 +28,9 @@ RUN apt-get update && apt-get install -y \
 RUN wget -O- https://github.com/lwthiker/curl-impersonate/releases/download/v0.6.1/libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz \
     | tar -xz -C /usr/local/lib
 
-# 3. Set environment variables for PHP to use curl-impersonate
-ENV LD_PRELOAD=/usr/local/lib/libcurl-impersonate-chrome.so
-ENV CURL_IMPERSONATE=chrome116
+# 3. Set environment variables for PHP to use curl-impersonate (Firefox to match 4get's UA)
+ENV LD_PRELOAD=/usr/local/lib/libcurl-impersonate-ff.so
+ENV CURL_IMPERSONATE=ff117
 
 WORKDIR /var/www/html
 

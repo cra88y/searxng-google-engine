@@ -10,6 +10,7 @@ services:
     depends_on:
       - valkey
       - 4get-hijacked
+      - flaresolverr
     environment:
       - SEARXNG_OUTGOING_HTTP_PROTOCOL_DISABLED=false
       - SEARXNG_OUTGOING_ALLOW_PRIVATE_NETWORKS=true
@@ -94,6 +95,27 @@ services:
       start_period: 10s
     networks:
       - searxng-net
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=UTC
+    ports:
+      - "8191:8191"
+    restart: unless-stopped
+    sysctls:
+      - net.ipv4.ip_default_ttl=128
+      - net.ipv4.tcp_timestamps=0
+    networks:
+      - searxng-net
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8191/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 networks:
   searxng-net:
     driver: bridge
